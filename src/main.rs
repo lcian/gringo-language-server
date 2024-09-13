@@ -413,10 +413,16 @@ impl LanguageServer for GringoLanguageServerBackend {
         let mut completions: Vec<CompletionItem> = vec![];
         for predicate in &document_state.predicates {
             let Predicate { name, arity } = predicate;
+
             let mut completion = CompletionItem::default();
             completion.label = format!("{}/{}", name, arity);
             completion.kind = Some(CompletionItemKind::FUNCTION);
-            let mut insert_text = format!("{}", name);
+            let mut insert_text = format!("{}/{}", name, arity);
+            completion.insert_text = Some(insert_text.clone());
+            completions.push(completion.clone());
+
+            completion.kind = Some(CompletionItemKind::SNIPPET);
+            insert_text = format!("{}", name);
             if *arity != 0usize {
                 insert_text += "(";
                 if *arity > 0usize {
@@ -424,7 +430,7 @@ impl LanguageServer for GringoLanguageServerBackend {
                 }
                 insert_text += "_)";
             }
-            completion.insert_text = Some(insert_text);
+            completion.insert_text = Some(insert_text.clone());
             completions.push(completion);
         }
         for name in &document_state.constants {
